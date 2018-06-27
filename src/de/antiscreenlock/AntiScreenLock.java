@@ -16,9 +16,9 @@ public class AntiScreenLock {
 
    private void antiScreenLock(){
       while(true) {
-         // 10 ms before 10 minutes
+         // every 5 minutes
          try {
-            Thread.sleep(599990);
+            Thread.sleep(300000);
          } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted", e);
          }
