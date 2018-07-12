@@ -16,7 +16,7 @@ public class AntiScreenLock {
 
    private void antiScreenLock(){
       while(true) {
-         robot.delay(300000);
+         robot.delay(60000);
          Point mousePosition = MouseInfo.getPointerInfo().getLocation();
          robot.mouseMove(mousePosition.x + 1, mousePosition.y + 1);
          robot.mouseMove(mousePosition.x, mousePosition.y);
