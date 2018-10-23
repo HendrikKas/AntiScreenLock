@@ -7,12 +7,26 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.net.URL;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import javax.swing.ImageIcon;
 
 public class Main {
 
    public static void main(String[] args) {
-
+      ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+      AntiScreenLock antiScreenLock = null;
+      try {
+         antiScreenLock = new AntiScreenLock();
+      } catch (AWTException e) {
+         throw new RuntimeException("AWTException", e);
+      }
+      ScheduledFuture antiScreenLockHandle = scheduledExecutorService.scheduleAtFixedRate(antiScreenLock::antiScreenLock, 5, 5,
+            TimeUnit.MINUTES);
       if(SystemTray.isSupported()){
          final TrayIcon trayIcon = new TrayIcon(createImage("image/monitor_lock.png", "AntiScreenLock"));
          final SystemTray systemTray = SystemTray.getSystemTray();
@@ -20,7 +34,7 @@ public class Main {
          final PopupMenu popupMenu = new PopupMenu();
          final MenuItem exit = new MenuItem("Exit");
          popupMenu.add(exit);
-         exit.addActionListener(e -> System.exit(0));
+         exit.addActionListener(e -> antiScreenLockHandle.cancel(true));
          trayIcon.setPopupMenu(popupMenu);
 
          try {
@@ -29,13 +43,10 @@ public class Main {
             // Tray icon could not be added
          }
       }
-
-
-
       try {
-         new AntiScreenLock();
-      } catch (AWTException e) {
-         throw new RuntimeException("AWTException", e);
+         antiScreenLockHandle.get();
+      } catch (InterruptedException | ExecutionException | CancellationException ignored) {
+         // This is expected! Program will terminate!
       }
       System.exit(0);
    }
